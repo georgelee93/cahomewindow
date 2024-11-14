@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 페이지 - 청암홈 윈도우</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --primary-red: #E31837;
+            --dark-gray: #333333;
+            --light-gray: #f5f5f5;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            line-height: 1.6;
+            color: var(--dark-gray);
+            background-color: var(--light-gray);
+        }
+
+        .header {
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 1rem 0;
+            margin-bottom: 30px;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-red);
+            text-decoration: none;
+        }
+
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 200px;
+        }
+
+        .search-button {
+            background-color: var(--primary-red);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .data-table {
+            width: 100%;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .data-table th {
+            background-color: #f8f9fa;
+            font-weight: 500;
+        }
+
+        .data-table tbody tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .status-new {
+            background-color: #e3f2fd;
+            color: #1976d2;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .status-contacted {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-button {
+            padding: 4px 8px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .edit-button {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .delete-button {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .page-button {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+        }
+
+        .page-button.active {
+            background-color: var(--primary-red);
+            color: white;
+            border-color: var(--primary-red);
+        }
+
+        @media (max-width: 1200px) {
+            .data-table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+
+        .admin-controls {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .logout-button {
+            background-color: var(--dark-gray);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .logout-button:hover {
+            background-color: #555;
+        }
+
+        .export-button {
+            background-color: #1f7244;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .export-button:hover {
+            background-color: #165733;
+        }
+
+        .export-button i {
+            font-size: 16px;
+        }
+
+        /* Edit modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 40px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .modal-form-group {
+            margin-bottom: 20px;
+        }
+
+        .modal-form-group input,
+        .modal-form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <a href="index.html" class="logo">청암홈 윈도우</a>
+            <div class="admin-controls">
+                <span>관리자 페이지</span>
+                <button onclick="logout()" class="logout-button">로그아웃</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <div class="admin-header">
+            <h1>고객 문의 관리</h1>
+            <div class="admin-controls">
+                <div class="search-box">
+                    <input type="text" class="search-input" placeholder="검색어를 입력하세요">
+                    <button class="search-button">검색</button>
+                </div>
+                <button class="export-button" onclick="exportToExcel()">
+                    <i class="fas fa-file-excel"></i> Excel 다운로드
+                </button>
+            </div>
+        </div>
+
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>날짜</th>
+                    <th>고객명</th>
+                    <th>연락처</th>
+                    <th>주소</th>
+                    <th>상담희망시간</th>
+                    <th>제조사</th>
+                    <th>창문종류</th>
+                    <th>크기(mm)</th>
+                    <th>층수</th>
+                    <th>견적금액</th>
+                    <th>상태</th>
+                    <th>비고</th>
+                    <th>관리</th>
+                    <th>마지막 수정 일</th>
+                </tr>
+            </thead>
+            <tbody id="inquiriesTableBody">
+                <!-- Data will be populated here -->
+            </tbody>
+        </table>
+
+        <div class="pagination">
+            <button class="page-button">이전</button>
+            <button class="page-button active">1</button>
+            <button class="page-button">2</button>
+            <button class="page-button">3</button>
+            <button class="page-button">다음</button>
+        </div>
+    </main>
+
+    <script>
+        // Authentication check
+        if (localStorage.getItem('adminAuth') !== 'true') {
+            window.location.href = 'login.html';
+        }
+
+        // Add logout function
+        function logout() {
+            localStorage.removeItem('adminAuth');
+            window.location.href = 'login.html';
+        }
+
+        // Edit functionality
+        function editInquiry(index) {
+            const inquiries = JSON.parse(localStorage.getItem('inquiries') || '[]');
+            const inquiry = inquiries[index];
+            
+            // Create edit modal HTML
+            const editModal = document.createElement('div');
+            editModal.className = 'modal';
+            editModal.innerHTML = `
+                <div class="modal-content">
+                    <span class="close" onclick="closeEditModal()">&times;</span>
+                    <h2>문의 수정</h2>
+                    <form id="editForm" onsubmit="saveEdit(event, ${index})">
+                        <div class="modal-form-group">
+                            <label>고객명</label>
+                            <input type="text" id="editName" value="${inquiry.name}" required>
+                        </div>
+                        <div class="modal-form-group">
+                            <label>연락처</label>
+                            <input type="tel" id="editPhone" value="${inquiry.phone}" required>
+                        </div>
+                        <div class="modal-form-group">
+                            <label>주소</label>
+                            <input type="text" id="editAddress" value="${inquiry.address}" required>
+                        </div>
+                        <div class="modal-form-group">
+                            <label>상태</label>
+                            <select id="editStatus">
+                                <option value="신규" ${inquiry.status === '신규' ? 'selected' : ''}>신규</option>
+                                <option value="연락완료" ${inquiry.status === '연락완료' ? 'selected' : ''}>연락완료</option>
+                                <option value="상완료" ${inquiry.status === '상담완료' ? 'selected' : ''}>상담완료</option>
+                                <option value="계약완료" ${inquiry.status === '계약완료' ? 'selected' : ''}>계약완료</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="modal-submit-btn">저장</button>
+                    </form>
+                </div>
+            `;
+            
+            document.body.appendChild(editModal);
+            editModal.style.display = 'block';
+        }
+
+        function closeEditModal() {
+            const editModal = document.querySelector('.modal');
+            if (editModal) {
+                editModal.remove();
+            }
+        }
+
+        function saveEdit(event, index) {
+            event.preventDefault();
+            
+            let inquiries = JSON.parse(localStorage.getItem('inquiries') || '[]');
+            const inquiry = inquiries[index];
+            
+            // Update inquiry with new values
+            inquiry.name = document.getElementById('editName').value;
+            inquiry.phone = document.getElementById('editPhone').value;
+            inquiry.address = document.getElementById('editAddress').value;
+            inquiry.status = document.getElementById('editStatus').value;
+            
+            // Save updated inquiries
+            localStorage.setItem('inquiries', JSON.stringify(inquiries));
+            
+            // Close modal and refresh table
+            closeEditModal();
+            loadInquiries();
+        }
+
+        // Function to format date
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('ko-KR');
+        }
+
+        // Function to format price
+        function formatPrice(price) {
+            return Number(price).toLocaleString() + '원';
+        }
+
+        // Function to format consultation time
+        function formatConsultTime(date, time) {
+            const consultDate = new Date(date);
+            return `${consultDate.getMonth() + 1}/${consultDate.getDate()} ${time}`;
+        }
+
+        // Function to load and display inquiries
+        function loadInquiries() {
+            const inquiries = JSON.parse(localStorage.getItem('inquiries') || '[]');
+            const tableBody = document.getElementById('inquiriesTableBody');
+            
+            tableBody.innerHTML = inquiries.map((inquiry, index) => {
+                // Format the registration date with time and seconds
+                const regDate = new Date(inquiry.date);
+                const formattedRegDate = `${regDate.getFullYear()}-${String(regDate.getMonth() + 1).padStart(2, '0')}-${String(regDate.getDate()).padStart(2, '0')} ${String(regDate.getHours()).padStart(2, '0')}:${String(regDate.getMinutes()).padStart(2, '0')}:${String(regDate.getSeconds()).padStart(2, '0')}`;
+
+                // Format the consultation date and time
+                const consultDate = new Date(inquiry.consultDate);
+                const formattedConsultDate = `${consultDate.getMonth() + 1}/${consultDate.getDate()} ${inquiry.consultTime}`;
+
+                // Format the last modified date
+                const lastModified = inquiry.lastModified ? new Date(inquiry.lastModified) : new Date(inquiry.date);
+                const formattedLastModified = `${lastModified.getFullYear()}-${String(lastModified.getMonth() + 1).padStart(2, '0')}-${String(lastModified.getDate()).padStart(2, '0')} ${String(lastModified.getHours()).padStart(2, '0')}:${String(lastModified.getMinutes()).padStart(2, '0')}:${String(lastModified.getSeconds()).padStart(2, '0')}`;
+
+                return `
+                    <tr>
+                        <td>${formattedRegDate}</td>
+                        <td>${inquiry.name}</td>
+                        <td>${inquiry.phone}</td>
+                        <td>${inquiry.address}</td>
+                        <td>${formattedConsultDate}</td>
+                        <td>${inquiry.manufacturer}</td>
+                        <td>${inquiry.windowType}</td>
+                        <td>${inquiry.width} x ${inquiry.height}</td>
+                        <td>${inquiry.floor}층</td>
+                        <td>${Number(inquiry.price).toLocaleString()}원</td>
+                        <td>
+                            <select id="status-${index}" disabled>
+                                <option value="신규" ${inquiry.status === '신규' ? 'selected' : ''}>신규</option>
+                                <option value="상담완료" ${inquiry.status === '상담완료' ? 'selected' : ''}>상담완료</option>
+                                <option value="계약완료" ${inquiry.status === '계약완료' ? 'selected' : ''}>계약완료</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="text" id="remarks-${index}" value="${inquiry.remarks || ''}" placeholder="비고 입력" disabled>
+                        </td>
+                        <td>
+                            <button onclick="modifyRow(${index})">수정</button>
+                            <button onclick="saveChanges(${index})" style="display:none;">저장</button>
+                            <button onclick="deleteRow(${index})">삭제</button>
+                        </td>
+                        <td>${formattedLastModified}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function modifyRow(index) {
+            document.getElementById(`status-${index}`).disabled = false;
+            document.getElementById(`remarks-${index}`).disabled = false;
+            document.querySelector(`tr:nth-child(${index + 1}) button[onclick^="modifyRow"]`).style.display = 'none';
+            document.querySelector(`tr:nth-child(${index + 1}) button[onclick^="saveChanges"]`).style.display = 'inline-block';
+        }
+
+        function saveChanges(index) {
+            let inquiries = JSON.parse(localStorage.getItem('inquiries') || '[]');
+            const newStatus = document.getElementById(`status-${index}`).value;
+            const newRemarks = document.getElementById(`remarks-${index}`).value;
+            
+            inquiries[index].status = newStatus;
+            inquiries[index].remarks = newRemarks;
+            inquiries[index].lastModified = new Date().toISOString();
+            
+            localStorage.setItem('inquiries', JSON.stringify(inquiries));
+            alert('변경 사항이 저장되었습니다.');
+            loadInquiries(); // Refresh the table to reflect changes
+        }
+
+        function deleteRow(index) {
+            if (confirm('정말로 이 항목을 삭제하시겠습니까?')) {
+                let inquiries = JSON.parse(localStorage.getItem('inquiries') || '[]');
+                inquiries.splice(index, 1); // Remove the inquiry at the specified index
+                localStorage.setItem('inquiries', JSON.stringify(inquiries));
+                loadInquiries(); // Refresh the table to reflect changes
+            }
+        }
+
+        // Function to handle search
+        function handleSearch() {
+            const searchTerm = document.querySelector('.search-input').value.toLowerCase();
+            const inquiries = JSON.parse(localStorage.getItem('inquiries') || '[]');
+            const filteredInquiries = inquiries.filter(inquiry => 
+                inquiry.name.toLowerCase().includes(searchTerm) ||
+                inquiry.phone.includes(searchTerm) ||
+                inquiry.address.toLowerCase().includes(searchTerm)
+            );
+
+            const tableBody = document.getElementById('inquiriesTableBody');
+            tableBody.innerHTML = filteredInquiries.map(inquiry => `
+                <tr>
+                    <td>${formatDate(inquiry.date)}</td>
+                    <td>${inquiry.name}</td>
+                    <td>${inquiry.phone}</td>
+                    <td>${inquiry.address}</td>
+                    <td>${formatConsultTime(inquiry.consultDate, inquiry.consultTime)}</td>
+                    <td>${inquiry.manufacturer}</td>
+                    <td>${inquiry.windowType}</td>
+                    <td>${inquiry.width} x ${inquiry.height}</td>
+                    <td>${inquiry.floor}층</td>
+                    <td>${formatPrice(inquiry.price)}</td>
+                    <td><span class="status-new">${inquiry.status}</span></td>
+                    <td>${inquiry.remarks}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-button edit-button" onclick="editInquiry(${inquiries.indexOf(inquiry)})">수정</button>
+                            <button class="action-button delete-button" onclick="deleteInquiry(${inquiries.indexOf(inquiry)})">삭제</button>
+                        </div>
+                    </td>
+                    <td>${formattedLastModified}</td>
+                </tr>
+            `).join('');
+        }
+
+        // Function to delete inquiry
+        function deleteInquiry(index) {
+            if (confirm('이 문의를 삭제하시겠습니까?')) {
+                let inquiries = JSON.parse(localStorage.getItem('inquiries') || '[]');
+                inquiries.splice(index, 1);
+                localStorage.setItem('inquiries', JSON.stringify(inquiries));
+                loadInquiries();
+            }
+        }
+
+        // Add event listeners
+        document.querySelector('.search-button').addEventListener('click', handleSearch);
+        document.querySelector('.search-input').addEventListener('keyup', handleSearch);
+
+        // Load inquiries when page loads
+        window.onload = loadInquiries;
+
+        function exportToExcel() {
+            const inquiries = JSON.parse(localStorage.getItem('inquiries') || '[]');
+            
+            // Map inquiries to a format suitable for Excel
+            const data = inquiries.map(inquiry => ({
+                '등록 날짜': new Date(inquiry.date).toLocaleString(),
+                '이름': inquiry.name,
+                '전화번호': inquiry.phone,
+                '주소': inquiry.address,
+                '상담 날짜': new Date(inquiry.consultDate).toLocaleDateString() + ' ' + inquiry.consultTime,
+                '제조사': inquiry.manufacturer,
+                '창문 종류': inquiry.windowType,
+                '크기': `${inquiry.width} x ${inquiry.height}`,
+                '층수': `${inquiry.floor}층`,
+                '가격': `${Number(inquiry.price).toLocaleString()}원`,
+                '상태': inquiry.status,
+                '비고': inquiry.remarks || '',
+                '마지막 수정': inquiry.lastModified ? new Date(inquiry.lastModified).toLocaleString() : ''
+            }));
+
+            // Create a new workbook and add the data
+            const worksheet = XLSX.utils.json_to_sheet(data);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'Inquiries');
+
+            // Export the workbook to a file
+            XLSX.writeFile(workbook, 'inquiries.xlsx');
+        }
+    </script>
+</body>
+</html> 

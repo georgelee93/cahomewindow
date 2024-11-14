@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Index Page Data - Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-red: #E31837;
+            --dark-gray: #333333;
+            --light-gray: #f5f5f5;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            line-height: 1.6;
+            color: var(--dark-gray);
+        }
+
+        .header {
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 1rem 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: 120px auto 40px;
+            padding: 0 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--light-gray);
+        }
+
+        .edit-button, .delete-button {
+            cursor: pointer;
+            color: var(--primary-red);
+            border: none;
+            background: none;
+            text-decoration: underline;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 1000; 
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgb(0,0,0); 
+            background-color: rgba(0,0,0,0.4); 
+            padding-top: 60px; 
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto; 
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%; 
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        input[type="text"], input[type="number"], input[type="date"] {
+            width: 100%;
+            padding: 8px;
+            margin: 4px 0;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <a href="index.html" class="logo">청암홈 윈도우</a>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <h1>Index Page Data</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>제조사</th>
+                    <th>창문 종류</th>
+                    <th>길이 (mm)</th>
+                    <th>높이 (mm)</th>
+                    <th>층수</th>
+                    <th>설치 희망일</th>
+                    <th>작업</th>
+                </tr>
+            </thead>
+            <tbody id="indexDataTableBody">
+                <!-- Data will be dynamically inserted here -->
+            </tbody>
+        </table>
+    </main>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>수정 데이터</h2>
+            <form id="editForm">
+                <label for="editManufacturer">제조사:</label>
+                <input type="text" id="editManufacturer" required>
+                <label for="editWindowType">창문 종류:</label>
+                <input type="text" id="editWindowType" required>
+                <label for="editWidth">길이 (mm):</label>
+                <input type="number" id="editWidth" required>
+                <label for="editHeight">높이 (mm):</label>
+                <input type="number" id="editHeight" required>
+                <label for="editFloor">층수:</label>
+                <input type="text" id="editFloor" required>
+                <label for="editInstallDate">설치 희망일:</label>
+                <input type="date" id="editInstallDate" required>
+                <button type="submit">저장</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let currentEditIndex = null;
+
+        function loadIndexData() {
+            const indexData = JSON.parse(localStorage.getItem('indexData') || '[]');
+            const tableBody = document.getElementById('indexDataTableBody');
+            
+            tableBody.innerHTML = indexData.map((data, index) => `
+                <tr>
+                    <td>${data.manufacturer}</td>
+                    <td>${data.windowType}</td>
+                    <td>${data.width} mm</td>
+                    <td>${data.height} mm</td>
+                    <td>${data.floor}층</td>
+                    <td>${new Date(data.installDate).toLocaleDateString()}</td>
+                    <td>
+                        <button class="edit-button" onclick="openModal(${index})">수정</button>
+                        <button class="delete-button" onclick="deleteRow(${index})">삭제</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function openModal(index) {
+            currentEditIndex = index;
+            const indexData = JSON.parse(localStorage.getItem('indexData') || '[]');
+            const data = indexData[index];
+
+            // Populate the modal fields with current data
+            document.getElementById('editManufacturer').value = data.manufacturer;
+            document.getElementById('editWindowType').value = data.windowType;
+            document.getElementById('editWidth').value = data.width;
+            document.getElementById('editHeight').value = data.height;
+            document.getElementById('editFloor').value = data.floor;
+            document.getElementById('editInstallDate').value = new Date(data.installDate).toISOString().split('T')[0];
+
+            // Show the modal
+            document.getElementById('editModal').style.display = "block";
+        }
+
+        function closeModal() {
+            document.getElementById('editModal').style.display = "none";
+        }
+
+        document.getElementById('editForm').onsubmit = function(event) {
+            event.preventDefault();
+            const indexData = JSON.parse(localStorage.getItem('indexData') || '[]');
+
+            // Update the data with new values
+            indexData[currentEditIndex] = {
+                manufacturer: document.getElementById('editManufacturer').value,
+                windowType: document.getElementById('editWindowType').value,
+                width: document.getElementById('editWidth').value,
+                height: document.getElementById('editHeight').value,
+                floor: document.getElementById('editFloor').value,
+                installDate: document.getElementById('editInstallDate').value
+            };
+
+            localStorage.setItem('indexData', JSON.stringify(indexData));
+            loadIndexData(); // Refresh the table
+            closeModal(); // Close the modal
+        };
+
+        function deleteRow(index) {
+            if (confirm('정말로 이 항목을 삭제하시겠습니까?')) {
+                let indexData = JSON.parse(localStorage.getItem('indexData') || '[]');
+                indexData.splice(index, 1); // Remove the inquiry at the specified index
+                localStorage.setItem('indexData', JSON.stringify(indexData));
+                loadIndexData(); // Refresh the table to reflect changes
+            }
+        }
+
+        // Call loadIndexData when the page loads
+        window.onload = loadIndexData;
+    </script>
+</body>
+</html> 

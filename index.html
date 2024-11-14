@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>청암홈 윈도우 - 전문 창호 설치</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-red: #E31837;
+            --dark-gray: #333333;
+            --light-gray: #f5f5f5;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            line-height: 1.6;
+            color: var(--dark-gray);
+        }
+
+        .header {
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 1rem 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-red);
+            text-decoration: none;
+        }
+
+        .hero {
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), 
+                        url('https://images.unsplash.com/photo-1501045337096-542a73dafa4f?q=80&w=2052&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+            background-size: cover;
+            background-position: center;
+            height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+            margin-top: 70px;
+        }
+
+        .hero-content h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .hero-content p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .form-container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            max-width: 800px;
+            margin: -100px auto 0;
+            position: relative;
+        }
+
+        .form-title {
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--dark-gray);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark-gray);
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 20px;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        input[type="number"],
+        input[type="date"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="number"]:focus,
+        input[type="date"]:focus {
+            border-color: var(--primary-red);
+            outline: none;
+        }
+
+        .submit-btn {
+            background-color: var(--primary-red);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 6px;
+            font-size: 18px;
+            font-weight: 500;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+
+        .submit-btn:hover {
+            background-color: #c41330;
+        }
+
+        .benefits {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin-top: 60px;
+            text-align: center;
+        }
+
+        .benefit-item {
+            padding: 20px;
+        }
+
+        .benefit-item i {
+            font-size: 40px;
+            color: var(--primary-red);
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .benefits {
+                grid-template-columns: 1fr;
+            }
+            
+            .hero {
+                height: 300px;
+            }
+
+            .hero-content h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <a href="#" class="logo">청암홈 윈도우</a>
+            <nav>
+                <!-- Add navigation items if needed -->
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1>최고급 창호 설치 서비스</h1>
+            <p>에너지 효율적이고 아름다운 창호로 더 나은 주거환경을 만듭니다</p>
+        </div>
+    </section>
+
+    <main class="main-container">
+        <div class="form-container">
+            <h2 class="form-title">무료 견적 계산</h2>
+            <form id="windowForm" onsubmit="calculatePrice(event)">
+                <div class="form-group">
+                    <label>창호 브랜드 선택</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" name="manufacturer" value="KCC" required id="kcc">
+                            <label for="kcc">KCC</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" name="manufacturer" value="청암" id="cheongam">
+                            <label for="cheongam">청암</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>창문 종류</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" name="windowType" value="단창" required id="single">
+                            <label for="single">단창</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" name="windowType" value="이중창" id="double">
+                            <label for="double">이중창</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="width">길이 (mm)</label>
+                    <input type="number" id="width" required min="1" placeholder="창문 길이를 입력하세요">
+                </div>
+
+                <div class="form-group">
+                    <label for="height">높이 (mm)</label>
+                    <input type="number" id="height" required min="1" placeholder="창문 높이를 입력하세요">
+                </div>
+
+                <div class="form-group">
+                    <label for="floor">층수</label>
+                    <input type="number" id="floor" required min="1" placeholder="설치 층수를 입력하세요">
+                </div>
+
+                <div class="form-group">
+                    <label for="installDate">설치 희망일</label>
+                    <input type="date" id="installDate" required>
+                </div>
+
+                <button type="submit" class="submit-btn">견적 계산하기</button>
+            </form>
+        </div>
+
+        <div class="benefits">
+            <div class="benefit-item">
+                <i class="fas fa-medal"></i>
+                <h3>최고급 자재</h3>
+                <p>KCC와 청암의 프리미엄 창호 제품</p>
+            </div>
+            <div class="benefit-item">
+                <i class="fas fa-tools"></i>
+                <h3>전문 시공</h3>
+                <p>20년 경력의 전문가가 직접 시공</p>
+            </div>
+            <div class="benefit-item">
+                <i class="fas fa-shield-alt"></i>
+                <h3>품질 보증</h3>
+                <p>13년 품질 보증 서비스 제공</p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function calculatePrice(event) {
+            event.preventDefault();
+            
+            const width = document.getElementById('width').value;
+            const height = document.getElementById('height').value;
+            const price = width * height * 1000;
+
+            // Store the data in localStorage to use it in the result page
+            localStorage.setItem('calculatedPrice', price);
+            localStorage.setItem('manufacturer', document.querySelector('input[name="manufacturer"]:checked').value);
+            localStorage.setItem('windowType', document.querySelector('input[name="windowType"]:checked').value);
+            localStorage.setItem('width', width);
+            localStorage.setItem('height', height);
+            localStorage.setItem('floor', document.getElementById('floor').value);
+            localStorage.setItem('installDate', document.getElementById('installDate').value);
+
+            // Store index page data separately
+            const indexData = JSON.parse(localStorage.getItem('indexData') || '[]');
+            indexData.push({
+                manufacturer: localStorage.getItem('manufacturer'),
+                windowType: localStorage.getItem('windowType'),
+                width: localStorage.getItem('width'),
+                height: localStorage.getItem('height'),
+                floor: localStorage.getItem('floor'),
+                installDate: localStorage.getItem('installDate')
+            });
+            localStorage.setItem('indexData', JSON.stringify(indexData));
+
+            // Redirect to result page
+            window.location.href = 'result.html';
+        }
+    </script>
+</body>
+</html> 
